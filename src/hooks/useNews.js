@@ -2,17 +2,24 @@ import { useEffect, useState } from 'react'
 
 import { getTopHeadlines, searchArticles } from '../services/newsService.js'
 
-export function useNews({ category, q, language = 'en' } = {}) {
+export function useNews({
+  category,
+  q,
+  country,
+  language = 'en',
+} = {}) {
   const [articles, setArticles] = useState([])
+
   const [error, setError] = useState(null)
+
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
     const request = q
-      ? searchArticles(q, { language })
-      : getTopHeadlines({ category, language })
+      ? searchArticles(q, { country, language })
+      : getTopHeadlines({ category, country, language })
 
     request
       .then((result) => {
@@ -37,7 +44,7 @@ export function useNews({ category, q, language = 'en' } = {}) {
     return () => {
       cancelled = true
     }
-  }, [category, q, language])
+  }, [category, q, country, language])
 
   return { articles, error, loading }
 }

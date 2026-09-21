@@ -3,14 +3,25 @@ import { useEffect, useState } from 'react'
 import { useNews } from '../../hooks/useNews.js'
 
 import ArticleList from './ArticleList.jsx'
+
 import EmptyState from '../ui/EmptyState.jsx'
+
 import ErrorMessage from '../ui/ErrorMessage.jsx'
+
 import Spinner from '../ui/Spinner.jsx'
 
-function NewsResults({ category, q, language, emptyMessage, onRetry }) {
+function NewsResults({
+  category,
+  q,
+  country,
+  language,
+  emptyMessage,
+  onRetry,
+}) {
   const { articles, error, loading } = useNews({
     category,
     q,
+    country,
     language,
   })
 
@@ -31,8 +42,13 @@ function NewsResults({ category, q, language, emptyMessage, onRetry }) {
 
 function NewsFeed({ category, q, emptyMessage }) {
   const [attempt, setAttempt] = useState(0)
+
   const [language, setLanguage] = useState(
     () => localStorage.getItem('smartnews-language') ?? 'en',
+  )
+
+  const [country, setCountry] = useState(
+    () => localStorage.getItem('smartnews-country') ?? 'in',
   )
 
   useEffect(() => {
@@ -50,11 +66,27 @@ function NewsFeed({ category, q, emptyMessage }) {
     }
   }, [])
 
+  useEffect(() => {
+    const handleCountryChange = () => {
+      setCountry(localStorage.getItem('smartnews-country') ?? 'in')
+    }
+
+    window.addEventListener('smartnews-country-change', handleCountryChange)
+
+    return () => {
+      window.removeEventListener(
+        'smartnews-country-change',
+        handleCountryChange,
+      )
+    }
+  }, [])
+
   return (
     <NewsResults
-      key={`${category ?? ''}-${q ?? ''}-${language}-${attempt}`}
+      key={`${category ?? ''}-${q ?? ''}-${country}-${language}-${attempt}`}
       category={category}
       q={q}
+      country={country}
       language={language}
       emptyMessage={emptyMessage}
       onRetry={() => setAttempt((value) => value + 1)}

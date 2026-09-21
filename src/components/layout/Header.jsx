@@ -1,17 +1,28 @@
 import { useEffect, useState } from 'react'
+
 import { Link, useSearchParams } from 'react-router-dom'
 
 import CategoryNav from '../news/CategoryNav.jsx'
+
 import SearchBar from '../news/SearchBar.jsx'
+
 import ThemeToggle from '../ui/ThemeToggle.jsx'
+
 import { languages } from '../../data/languages.js'
+
+import { countries } from '../../data/countries.js'
 
 function Header() {
   const [searchParams] = useSearchParams()
+
   const searchKey = searchParams.get('q') ?? ''
 
   const [selectedLanguage, setSelectedLanguage] = useState(
     () => localStorage.getItem('smartnews-language') ?? 'en',
+  )
+
+  const [selectedCountry, setSelectedCountry] = useState(
+    () => localStorage.getItem('smartnews-country') ?? 'in',
   )
 
   useEffect(() => {
@@ -31,12 +42,41 @@ function Header() {
     }
   }, [])
 
+  useEffect(() => {
+    const handleCountryChange = () => {
+      setSelectedCountry(
+        localStorage.getItem('smartnews-country') ?? 'in',
+      )
+    }
+
+    window.addEventListener('smartnews-country-change', handleCountryChange)
+
+    return () => {
+      window.removeEventListener(
+        'smartnews-country-change',
+        handleCountryChange,
+      )
+    }
+  }, [])
+
   function handleLanguageChange(event) {
     const language = event.target.value
 
     localStorage.setItem('smartnews-language', language)
+
     setSelectedLanguage(language)
+
     window.dispatchEvent(new Event('smartnews-language-change'))
+  }
+
+  function handleCountryChange(event) {
+    const country = event.target.value
+
+    localStorage.setItem('smartnews-country', country)
+
+    setSelectedCountry(country)
+
+    window.dispatchEvent(new Event('smartnews-country-change'))
   }
 
   return (
@@ -49,6 +89,22 @@ function Header() {
         </Link>
 
         <div className="site-header__tools">
+          <label className="country-selector">
+            <span className="sr-only">Country</span>
+
+            <select
+              value={selectedCountry}
+              onChange={handleCountryChange}
+              aria-label="Select country"
+            >
+              {countries.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <label className="language-selector">
             <span className="sr-only">Language</span>
 
