@@ -1,0 +1,128 @@
+.article-list {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.article-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.article-card__media {
+  aspect-ratio: 16 / 9;
+  background: var(--accent-soft);
+  overflow: hidden;
+}
+
+.article-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.article-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.article-card__title {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.article-card__description {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.98rem;
+}
+
+.article-card__meta {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.article-card__link {
+  align-self: flex-start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.article-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.35rem 1rem;
+}
+
+.article-card__summary-button {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.article-card__summary-button:hover,
+.article-card__link:hover {
+  color: var(--ink);
+}
+
+.article-card__summary-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.ai-summary {
+  flex: 1 1 12rem;
+}
+
+.ai-summary__panel {
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-muted);
+  font-size: 0.95rem;
+}
+
+.ai-summary__panel p {
+  margin: 0;
+}
+
+.ai-summary__error {
+  color: var(--ink);
+}
+
+@media (min-width: 768px) {
+  .article-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .article-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

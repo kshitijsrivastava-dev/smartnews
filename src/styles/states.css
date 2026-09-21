@@ -1,0 +1,51 @@
+.status-block {
+  margin-top: 1.5rem;
+  max-width: 36rem;
+  color: var(--ink-muted);
+}
+
+.status-block h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.4rem;
+}
+
+.status-block--error {
+  color: var(--ink);
+}
+
+.status-block__action {
+  margin-top: 0.75rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-block__action:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.spinner {
+  display: inline-block;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-right: 0.55rem;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  vertical-align: -0.15rem;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
