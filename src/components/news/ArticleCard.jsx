@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { formatPublishedDate } from '../../utils/formatDate.js'
 
@@ -26,6 +27,18 @@ function ArticleCard({ article }) {
   const published = formatPublishedDate(article.publishedAt)
 
   const readingTime = getReadingTime(article)
+  const articleId = article.id || encodeURIComponent(article.url || article.title)
+
+  function handleArticleClick() {
+    try {
+      window.sessionStorage.setItem(
+        `smartnews-article:${articleId}`,
+        JSON.stringify(article),
+      )
+    } catch {
+      // React Router state still makes the article available for this navigation.
+    }
+  }
 
   return (
     <article className="article-card">
@@ -68,14 +81,14 @@ function ArticleCard({ article }) {
 
         <div className="article-card__actions">
           <div className="article-card__read-row">
-            <a
+            <Link
               className="article-card__link"
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              to={`/article/${encodeURIComponent(articleId)}`}
+              state={{ article }}
+              onClick={handleArticleClick}
             >
               Read Full Article
-            </a>
+            </Link>
 
             <span className="article-card__reading-time">
               {readingTime}

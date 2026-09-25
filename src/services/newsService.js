@@ -1,4 +1,5 @@
 import { toGNewsCategory } from '../data/categories.js'
+import { mockArticles } from '../data/mockArticles.js'
 
 function createArticleId(url) {
   return encodeURIComponent(url)
@@ -21,6 +22,28 @@ function normalizeArticle(article, category = '') {
     url,
     category,
   }
+}
+
+function getDevelopmentArticles({ category, q } = {}) {
+  const normalizedQuery = q?.trim().toLowerCase()
+  const normalizedCategory =
+    category === 'nation'
+      ? 'national'
+      : category === 'world'
+        ? 'international'
+        : category
+
+  const articles = mockArticles.filter((article) => {
+    if (normalizedQuery) {
+      const searchableText =
+        `${article.title} ${article.description} ${article.content}`.toLowerCase()
+      return searchableText.includes(normalizedQuery)
+    }
+
+    return !normalizedCategory || article.category === normalizedCategory
+  })
+
+  return { totalArticles: articles.length, articles }
 }
 
 async function fetchNews({
@@ -50,28 +73,39 @@ async function fetchNews({
 
   const query = params.toString()
 
-  const response = await fetch(query ? `/api/news?${query}` : '/api/news')
+  try {
+    const response = await fetch(query ? `/api/news?${query}` : '/api/news')
 
-  const payload = await response.json().catch(() => null)
+    const payload = await response.json().catch(() => null)
 
-  if (!response.ok) {
-    const message =
-      payload?.error ||
-      payload?.message ||
-      payload?.errors?.[0] ||
-      'Failed to load news'
+    if (!response.ok) {
+      const message =
+        payload?.error ||
+        payload?.message ||
+        payload?.errors?.[0] ||
+        'Failed to load news'
 
-    throw new Error(message)
-  }
+      throw new Error(message)
+    }
 
-  const articles = Array.isArray(payload?.articles) ? payload.articles : []
-  const categoryValue = displayCategory || category || ''
+    const articles = Array.isArray(payload?.articles) ? payload.articles : []
+    const categoryValue = displayCategory || category || ''
 
-  return {
-    totalArticles: payload?.totalArticles ?? articles.length,
-    articles: articles
-      .map((article) => normalizeArticle(article, categoryValue))
-      .filter((article) => article.title && article.url),
+    return {
+      totalArticles: payload?.totalArticles ?? articles.length,
+      articles: articles
+        .map((article) => normalizeArticle(article, categoryValue))
+        .filter((article) => article.title && article.url),
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      return getDevelopmentArticles({
+        category: displayCategory || category,
+        q,
+      })
+    }
+
+    throw error
   }
 }
 
