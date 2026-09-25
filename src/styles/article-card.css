@@ -3,12 +3,20 @@
   margin: 1.5rem 0 0;
   padding: 0;
   display: grid;
+  align-items: stretch;
   gap: 1.25rem;
+}
+
+.article-list > li {
+  display: flex;
+  min-width: 0;
 }
 
 .article-card {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-width: 0;
   background: var(--bg-elevated);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -30,6 +38,7 @@
 .article-card__body {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 0.65rem;
   padding: 1rem 1.1rem 1.15rem;
 }
@@ -66,9 +75,28 @@
 
 .article-card__actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 0.35rem 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  margin-top: auto;
+}
+
+.article-card__read-row {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.article-card__reading-time {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .article-card__summary-button {
@@ -95,7 +123,7 @@
 }
 
 .ai-summary {
-  flex: 1 1 12rem;
+  flex: none;
 }
 
 .ai-summary__panel {
