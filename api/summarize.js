@@ -63,14 +63,24 @@ function readSummaryText(response) {
     .join('\n')
 }
 
+function parseBulletPoints(rawText) {
+  return rawText
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.replace(/^[-*•]\s*/, '').trim())
+    .filter(Boolean)
+}
+
 function buildPrompt({ title, description, content, language }) {
   return [
-    `Summarize the following news article in 3 to 5 concise, factual sentences in ${language}.`,
+    `Summarize the following news article as 4 to 6 concise, factual bullet points in ${language}.`,
     `Write the entire summary in ${language}.`,
     'Use only the provided title, description, and content.',
     'Do not invent facts, quotes, or details that are not present.',
     'If the source text is truncated, summarize only what is available.',
-    'Return plain text only. Do not use markdown headings or bullet points.',
+    'Return each point on its own line, starting with a hyphen (-).',
+    'Do not use markdown headings, bold text, or numbering.',
     '',
     `Title: ${title || 'Unavailable'}`,
     `Description: ${description || 'Unavailable'}`,
@@ -136,7 +146,12 @@ export default async function handler(req, res) {
       return
     }
 
-    sendJson(res, 200, { summary })
+    const points = parseBulletPoints(summary)
+
+    sendJson(res, 200, {
+      summary,
+      points: points.length > 0 ? points : [summary],
+    })
   } catch (error) {
     console.error('Gemini summarize failed:', error?.message || error)
 

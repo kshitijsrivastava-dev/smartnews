@@ -110,6 +110,22 @@
   margin: 0;
 }
 
+.ai-summary__points {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.ai-summary__points li {
+  line-height: 1.45;
+}
+
+.ai-summary__points li::marker {
+  color: var(--accent);
+}
+
 .ai-summary__error {
   color: var(--ink);
 }

@@ -22,9 +22,18 @@ export async function summarizeArticle(article, language = 'en') {
   const summary =
     typeof payload?.summary === 'string' ? payload.summary.trim() : ''
 
-  if (!summary) {
+  const points = Array.isArray(payload?.points)
+    ? payload.points
+        .map((point) => (typeof point === 'string' ? point.trim() : ''))
+        .filter(Boolean)
+    : []
+
+  if (!summary && points.length === 0) {
     throw new Error('Summary was empty')
   }
 
-  return { summary }
+  return {
+    summary,
+    points: points.length > 0 ? points : [summary],
+  }
 }
