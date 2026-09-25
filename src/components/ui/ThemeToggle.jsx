@@ -11,11 +11,11 @@ function ThemeToggle() {
       onClick={toggleTheme}
       aria-pressed={isDark}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
     >
       <span className="theme-toggle__icon" aria-hidden="true">
         {isDark ? '☀' : '☾'}
       </span>
-      <span className="theme-toggle__label">{isDark ? 'Light' : 'Dark'}</span>
     </button>
   )
 }

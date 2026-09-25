@@ -8,6 +8,8 @@ import SearchBar from '../news/SearchBar.jsx'
 
 import ThemeToggle from '../ui/ThemeToggle.jsx'
 
+import Dropdown from '../ui/Dropdown.jsx'
+
 import { languages } from '../../data/languages.js'
 
 import { countries } from '../../data/countries.js'
@@ -59,22 +61,18 @@ function Header() {
     }
   }, [])
 
-  function handleLanguageChange(event) {
-    const language = event.target.value
+  function handleLanguageChange(code) {
+    localStorage.setItem('smartnews-language', code)
 
-    localStorage.setItem('smartnews-language', language)
-
-    setSelectedLanguage(language)
+    setSelectedLanguage(code)
 
     window.dispatchEvent(new Event('smartnews-language-change'))
   }
 
-  function handleCountryChange(event) {
-    const country = event.target.value
+  function handleCountryChange(code) {
+    localStorage.setItem('smartnews-country', code)
 
-    localStorage.setItem('smartnews-country', country)
-
-    setSelectedCountry(country)
+    setSelectedCountry(code)
 
     window.dispatchEvent(new Event('smartnews-country-change'))
   }
@@ -82,44 +80,41 @@ function Header() {
   return (
     <header className="site-header">
       <div className="site-header__top">
-        <p className="site-header__kicker">AI-powered news briefing</p>
+        <div
+          className="site-header__tools site-header__tools--left"
+          role="group"
+          aria-label="Country preference"
+        >
+          <Dropdown
+            className="country-selector"
+            label="Country"
+            value={selectedCountry}
+            options={countries}
+            onChange={handleCountryChange}
+            ariaLabel="Select country"
+          />
+        </div>
 
-        <Link to="/" className="site-header__brand">
-          SmartNews
-        </Link>
+        <div className="site-header__identity">
+          <Link to="/" className="site-header__brand">
+            SmartNews
+          </Link>
+          <p className="site-header__kicker">AI-powered news briefing</p>
+        </div>
 
-        <div className="site-header__tools">
-          <label className="country-selector">
-            <span className="sr-only">Country</span>
-
-            <select
-              value={selectedCountry}
-              onChange={handleCountryChange}
-              aria-label="Select country"
-            >
-              {countries.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="language-selector">
-            <span className="sr-only">Language</span>
-
-            <select
-              value={selectedLanguage}
-              onChange={handleLanguageChange}
-              aria-label="Select language"
-            >
-              {languages.map((language) => (
-                <option key={language.code} value={language.code}>
-                  {language.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div
+          className="site-header__tools site-header__tools--right"
+          role="group"
+          aria-label="Language and theme preferences"
+        >
+          <Dropdown
+            className="language-selector"
+            label="Language"
+            value={selectedLanguage}
+            options={languages}
+            onChange={handleLanguageChange}
+            ariaLabel="Select language"
+          />
 
           <ThemeToggle />
         </div>
