@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import { Link } from 'react-router-dom'
 
 import { formatPublishedDate } from '../../utils/formatDate.js'
@@ -7,7 +8,6 @@ import AiSummary from './AiSummary.jsx'
 
 function getReadingTime(article) {
   const key = article.id || article.url || article.title || ''
-
   let hash = 0
 
   for (let i = 0; i < key.length; i += 1) {
@@ -23,11 +23,10 @@ function ArticleCard({ article }) {
   const [imageFailed, setImageFailed] = useState(false)
 
   const showImage = Boolean(article.image) && !imageFailed
-
   const published = formatPublishedDate(article.publishedAt)
-
   const readingTime = getReadingTime(article)
-  const articleId = article.id || encodeURIComponent(article.url || article.title)
+  const articleId =
+    article.id || encodeURIComponent(article.url || article.title)
 
   function handleArticleClick() {
     try {
@@ -42,20 +41,23 @@ function ArticleCard({ article }) {
 
   return (
     <article className="article-card">
-      {showImage ? (
-        <div className="article-card__media">
+      <div className="article-card__media">
+        {showImage ? (
           <img
             src={article.image}
             alt=""
             onError={() => setImageFailed(true)}
           />
-        </div>
-      ) : null}
+        ) : (
+          <div
+            className="article-card__media-placeholder"
+            aria-hidden="true"
+          />
+        )}
+      </div>
 
       <div className="article-card__body">
-        <h2 className="article-card__title">
-          {article.title}
-        </h2>
+        <h2 className="article-card__title">{article.title}</h2>
 
         {article.description ? (
           <p className="article-card__description">
@@ -64,18 +66,14 @@ function ArticleCard({ article }) {
         ) : null}
 
         <p className="article-card__meta">
-          {article.source ? (
-            <span>{article.source}</span>
-          ) : null}
+          {article.source ? <span>{article.source}</span> : null}
 
           {article.source && published ? (
             <span aria-hidden="true"> · </span>
           ) : null}
 
           {published ? (
-            <time dateTime={article.publishedAt}>
-              {published}
-            </time>
+            <time dateTime={article.publishedAt}>{published}</time>
           ) : null}
         </p>
 
