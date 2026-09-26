@@ -1,6 +1,8 @@
 import { languages } from '../src/data/languages.js'
 
 const GEMINI_MODEL = 'gemini-3.5-flash'
+const MAX_ATTEMPTS = 3
+const RETRY_DELAY_MS = 600
 
 export const config = {
   runtime: 'nodejs',
@@ -88,6 +90,62 @@ function buildPrompt({ title, description, content, language }) {
   ].join('\n')
 }
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isQuotaOrRateLimitError(error) {
+  const message = String(error?.message || error || '').toLowerCase()
+  const status = error?.status ?? error?.code
+
+  return (
+    status === 429 ||
+    message.includes('429') ||
+    message.includes('quota') ||
+    message.includes('rate limit') ||
+    message.includes('resource_exhausted')
+  )
+}
+
+async function generateWithRetry(ai, prompt) {
+  let lastError = null
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: prompt,
+      })
+
+      const summary = readSummaryText(response)
+
+      if (summary) {
+        return summary
+      }
+
+      lastError = new Error('Empty response from Gemini')
+    } catch (error) {
+      lastError = error
+      console.error(
+        `Gemini attempt ${attempt} failed:`,
+        error?.message || error,
+      )
+
+      if (isQuotaOrRateLimitError(error)) {
+        // Retrying won't help until the quota window resets — fail fast
+        // instead of burning more requests.
+        throw error
+      }
+    }
+
+    if (attempt < MAX_ATTEMPTS) {
+      await delay(RETRY_DELAY_MS * attempt)
+    }
+  }
+
+  throw lastError ?? new Error('Gemini request failed')
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     sendJson(res, 405, { error: 'Method not allowed' })
@@ -127,24 +185,9 @@ export default async function handler(req, res) {
 
     const ai = new GoogleGenAI({ apiKey })
 
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: buildPrompt({
-        title,
-        description,
-        content,
-        language,
-      }),
-    })
+    const prompt = buildPrompt({ title, description, content, language })
 
-    const summary = readSummaryText(response)
-
-    if (!summary) {
-      sendJson(res, 502, {
-        error: 'Gemini returned an empty summary',
-      })
-      return
-    }
+    const summary = await generateWithRetry(ai, prompt)
 
     const points = parseBulletPoints(summary)
 
@@ -156,7 +199,8 @@ export default async function handler(req, res) {
     console.error('Gemini summarize failed:', error?.message || error)
 
     sendJson(res, 502, {
-      error: 'Unable to generate a summary right now',
+      error:
+        'The summary service is briefly busy. Please try again in a moment.',
     })
   }
 }

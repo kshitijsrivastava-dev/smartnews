@@ -31,13 +31,7 @@ function AiSummary({ article }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleClick() {
-    if (points) {
-      setOpen((current) => !current)
-      return
-    }
-
-    setOpen(true)
+  async function fetchSummary() {
     setLoading(true)
     setError('')
 
@@ -61,6 +55,20 @@ function AiSummary({ article }) {
     }
   }
 
+  async function handleClick() {
+    if (points) {
+      setOpen((current) => !current)
+      return
+    }
+
+    setOpen(true)
+    await fetchSummary()
+  }
+
+  function handleRetry() {
+    fetchSummary()
+  }
+
   return (
     <div className="ai-summary">
       <button
@@ -77,10 +85,17 @@ function AiSummary({ article }) {
         <div className="ai-summary__panel" aria-live="polite">
           {loading ? <p>Generating summary…</p> : null}
 
-          {error ? (
-            <p className="ai-summary__error" role="alert">
-              {error}
-            </p>
+          {error && !loading ? (
+            <div className="ai-summary__error" role="alert">
+              <p>{error}</p>
+              <button
+                type="button"
+                className="ai-summary__retry"
+                onClick={handleRetry}
+              >
+                Try again
+              </button>
+            </div>
           ) : null}
 
           {!loading && !error && points ? (

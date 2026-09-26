@@ -158,6 +158,28 @@
   color: var(--ink);
 }
 
+.ai-summary__error p {
+  margin: 0 0 0.5rem;
+}
+
+.ai-summary__retry {
+  min-height: 36px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ai-summary__retry:hover {
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+}
+
 @media (min-width: 768px) {
   .article-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
