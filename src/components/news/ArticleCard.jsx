@@ -5,8 +5,9 @@ import { Link } from 'react-router-dom'
 import { formatPublishedDate } from '../../utils/formatDate.js'
 
 import AiSummary from './AiSummary.jsx'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
-function getReadingTime(article) {
+function getReadingTime(article, t) {
   const key = article.id || article.url || article.title || ''
   let hash = 0
 
@@ -16,15 +17,16 @@ function getReadingTime(article) {
 
   const minutes = 2 + (Math.abs(hash) % 4)
 
-  return `${minutes} min read`
+  return t('minutes', { minutes })
 }
 
 function ArticleCard({ article }) {
   const [imageFailed, setImageFailed] = useState(false)
+  const { language, t } = useTranslation()
 
   const showImage = Boolean(article.image) && !imageFailed
-  const published = formatPublishedDate(article.publishedAt)
-  const readingTime = getReadingTime(article)
+  const published = formatPublishedDate(article.publishedAt, language)
+  const readingTime = getReadingTime(article, t)
   const articleId =
     article.id || encodeURIComponent(article.url || article.title)
 
@@ -85,7 +87,7 @@ function ArticleCard({ article }) {
               state={{ article }}
               onClick={handleArticleClick}
             >
-              Read Full Article
+              {t('read')}
             </Link>
 
             <span className="article-card__reading-time">

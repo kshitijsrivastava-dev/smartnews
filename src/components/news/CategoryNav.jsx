@@ -1,9 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import { categories } from '../../data/categories.js'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
 function CategoryNav() {
+  const { t } = useTranslation()
   return (
-    <nav className="category-nav" aria-label="News categories">
+    <nav className="category-nav" aria-label={t('nav')}>
       <ul>
         {categories.map((category) => (
           <li key={category.slug}>
@@ -13,7 +15,7 @@ function CategoryNav() {
                 isActive ? 'category-nav__link is-active' : 'category-nav__link'
               }
             >
-              {category.label}
+              {t(`cat.${category.slug}`)}
             </NavLink>
           </li>
         ))}

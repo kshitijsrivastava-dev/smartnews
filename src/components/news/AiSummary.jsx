@@ -5,6 +5,7 @@ import {
   getCachedSummary,
   setCachedSummary,
 } from '../../utils/summaryCache.js'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
 function readCachedPoints(rawCached) {
   if (!rawCached) {
@@ -21,8 +22,7 @@ function readCachedPoints(rawCached) {
 }
 
 function AiSummary({ article }) {
-  const selectedLanguage =
-    localStorage.getItem('smartnews-language') ?? 'en'
+  const { language: selectedLanguage, t } = useTranslation()
 
   const cached = getCachedSummary(article.url, selectedLanguage)
 
@@ -48,8 +48,8 @@ function AiSummary({ article }) {
         selectedLanguage,
         JSON.stringify(resolvedPoints),
       )
-    } catch (requestError) {
-      setError(requestError.message || 'Failed to generate summary')
+    } catch {
+      setError(t('aiError'))
     } finally {
       setLoading(false)
     }
@@ -78,12 +78,12 @@ function AiSummary({ article }) {
         disabled={loading}
         aria-expanded={open}
       >
-        AI Summary
+        {t('aiSummary')}
       </button>
 
       {open ? (
         <div className="ai-summary__panel" aria-live="polite">
-          {loading ? <p>Generating summary…</p> : null}
+          {loading ? <p>{t('aiGenerating')}</p> : null}
 
           {error && !loading ? (
             <div className="ai-summary__error" role="alert">
@@ -93,7 +93,7 @@ function AiSummary({ article }) {
                 className="ai-summary__retry"
                 onClick={handleRetry}
               >
-                Try again
+                {t('retry')}
               </button>
             </div>
           ) : null}

@@ -1,14 +1,16 @@
+import { useTranslation } from '../../hooks/useLanguage.js'
+
 function Footer() {
   const year = new Date().getFullYear()
+  const { t } = useTranslation()
 
   return (
     <footer className="site-footer">
       <p className="site-footer__mark">SmartNews</p>
       <p>
-        A portfolio news aggregator. Original reporting belongs to the
-        publishers linked from each article.
+        {t('footer')}
       </p>
-      <p className="site-footer__copy">© {year} SmartNews</p>
+      <p className="site-footer__copy">{t('copyright', { year })}</p>
     </footer>
   )
 }

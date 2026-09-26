@@ -1,8 +1,11 @@
 import { useTheme } from '../../hooks/useTheme.js'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
+  const { t } = useTranslation()
   const isDark = theme === 'dark'
+  const label = t(isDark ? 'light' : 'dark')
 
   return (
     <button
@@ -10,8 +13,8 @@ function ThemeToggle() {
       className="theme-toggle"
       onClick={toggleTheme}
       aria-pressed={isDark}
-      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={label}
+      title={label}
     >
       <span className="theme-toggle__icon" aria-hidden="true">
         {isDark ? '☀' : '☾'}

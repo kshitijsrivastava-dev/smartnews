@@ -1,10 +1,12 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
 function SearchBar() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
+  const { t } = useTranslation()
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -19,7 +21,7 @@ function SearchBar() {
   return (
     <form className="search-bar" onSubmit={handleSubmit} role="search">
       <label className="visually-hidden" htmlFor="site-search">
-        Search articles
+        {t('search.label')}
       </label>
       <input
         id="site-search"
@@ -27,10 +29,10 @@ function SearchBar() {
         name="q"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search headlines"
+        placeholder={t('search.placeholder')}
         autoComplete="off"
       />
-      <button type="submit">Search</button>
+      <button type="submit">{t('search.button')}</button>
     </form>
   )
 }

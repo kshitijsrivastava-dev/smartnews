@@ -1,17 +1,16 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from '../hooks/useLanguage.js'
 
 function NotFoundPage() {
+  const { t } = useTranslation()
   return (
     <section className="page-placeholder page-placeholder--error">
       <p className="page-placeholder__eyebrow">404</p>
-      <h1>Page not found</h1>
-      <p>
-        That route does not exist. Return to the latest briefing or pick a
-        section from the masthead.
-      </p>
+      <h1>{t('notFound')}</h1>
+      <p>{t('notFoundInfo')}</p>
       <p>
         <Link to="/" className="page-placeholder__link">
-          Back to home
+          {t('backHome')}
         </Link>
       </p>
     </section>

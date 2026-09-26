@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -13,11 +13,13 @@ import Dropdown from '../ui/Dropdown.jsx'
 import { languages } from '../../data/languages.js'
 
 import { countries } from '../../data/countries.js'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
 function Header() {
   const [searchParams] = useSearchParams()
 
   const searchKey = searchParams.get('q') ?? ''
+  const { language, locale, t } = useTranslation()
 
   const [selectedLanguage, setSelectedLanguage] = useState(
     () => localStorage.getItem('smartnews-language') ?? 'en',
@@ -26,6 +28,15 @@ function Header() {
   const [selectedCountry, setSelectedCountry] = useState(
     () => localStorage.getItem('smartnews-country') ?? 'in',
   )
+
+  const localizedCountries = useMemo(() => {
+    try {
+      const names = new Intl.DisplayNames([locale], { type: 'region' })
+      return countries.map((country) => ({ ...country, name: names.of(country.code.toUpperCase()) ?? country.name }))
+    } catch {
+      return countries
+    }
+  }, [locale])
 
   useEffect(() => {
     const handleLanguageChange = () => {
@@ -83,15 +94,15 @@ function Header() {
         <div
           className="site-header__tools site-header__tools--left"
           role="group"
-          aria-label="Country preference"
+          aria-label={t('countryPrefs')}
         >
           <Dropdown
             className="country-selector"
-            label="Country"
+            label={t('country')}
             value={selectedCountry}
-            options={countries}
+            options={localizedCountries}
             onChange={handleCountryChange}
-            ariaLabel="Select country"
+            ariaLabel={t('selectCountry')}
           />
         </div>
 
@@ -99,21 +110,21 @@ function Header() {
           <Link to="/" className="site-header__brand">
             SmartNews
           </Link>
-          <p className="site-header__kicker">AI-powered news briefing</p>
+          <p className="site-header__kicker">{t('tagline')}</p>
         </div>
 
         <div
           className="site-header__tools site-header__tools--right"
           role="group"
-          aria-label="Language and theme preferences"
+          aria-label={t('langPrefs')}
         >
           <Dropdown
             className="language-selector"
-            label="Language"
-            value={selectedLanguage}
+            label={t('language')}
+            value={selectedLanguage || language}
             options={languages}
             onChange={handleLanguageChange}
-            ariaLabel="Select language"
+            ariaLabel={t('selectLanguage')}
           />
 
           <ThemeToggle />

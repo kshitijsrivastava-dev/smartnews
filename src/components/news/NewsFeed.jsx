@@ -9,6 +9,7 @@ import EmptyState from '../ui/EmptyState.jsx'
 import ErrorMessage from '../ui/ErrorMessage.jsx'
 
 import Spinner from '../ui/Spinner.jsx'
+import { useTranslation } from '../../hooks/useLanguage.js'
 
 function NewsResults({
   category,
@@ -31,15 +32,16 @@ function NewsResults({
     country,
     language,
   })
+  const { t } = useTranslation()
 
   if (loading && articles.length === 0) {
-    return <Spinner />
+    return <Spinner label={t('loading')} />
   }
 
   if (error && articles.length === 0) {
     return (
       <ErrorMessage
-        message={error}
+        message={t('error.news')}
         onRetry={onRetry}
       />
     )
@@ -57,7 +59,7 @@ function NewsResults({
 
       {error ? (
         <p className="news-feed__load-error" role="alert">
-          {error}
+          {t('error.more')}
         </p>
       ) : null}
 
@@ -69,7 +71,11 @@ function NewsResults({
             onClick={loadMore}
             disabled={loadingMore}
           >
-            {loadingMore ? 'Loading...' : error ? 'Try Again' : 'Load More'}
+            {loadingMore
+              ? t('loadingMore')
+              : error
+                ? t('retry')
+                : t('more')}
           </button>
         </div>
       ) : null}
