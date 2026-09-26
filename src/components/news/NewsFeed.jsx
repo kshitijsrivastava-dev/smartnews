@@ -32,7 +32,7 @@ function NewsResults({
     language,
   })
 
-  if (loading) {
+  if (loading && articles.length === 0) {
     return <Spinner />
   }
 
@@ -55,8 +55,8 @@ function NewsResults({
     <>
       <ArticleList articles={articles} />
 
-      {error && articles.length > 0 ? (
-        <p className="news-feed__load-error">
+      {error ? (
+        <p className="news-feed__load-error" role="alert">
           {error}
         </p>
       ) : null}
@@ -69,9 +69,7 @@ function NewsResults({
             onClick={loadMore}
             disabled={loadingMore}
           >
-            {loadingMore
-              ? 'Loading...'
-              : 'Load More'}
+            {loadingMore ? 'Loading...' : error ? 'Try Again' : 'Load More'}
           </button>
         </div>
       ) : null}

@@ -1,7 +1,8 @@
 import { toGNewsCategory } from '../data/categories.js'
+
 import { mockArticles } from '../data/mockArticles.js'
 
-const MOCK_PAGE_SIZE = 9
+export const NEWS_PAGE_SIZE = 9
 
 function createArticleId(url) {
   return encodeURIComponent(url)
@@ -48,7 +49,8 @@ function getDevelopmentArticles({
   q,
   page = 1,
 } = {}) {
-  const normalizedQuery = q?.trim().toLowerCase()
+  const normalizedQuery =
+    q?.trim().toLowerCase()
 
   const normalizedCategory =
     category === 'nation'
@@ -57,39 +59,31 @@ function getDevelopmentArticles({
         ? 'international'
         : category
 
-  const articles = mockArticles.filter((article) => {
-    if (normalizedQuery) {
-      const searchableText =
-        `${article.title} ${article.description} ${article.content}`
-          .toLowerCase()
+  const matchingArticles = mockArticles.filter(
+    (article) => {
+      if (normalizedQuery) {
+        const searchableText =
+          `${article.title} ${article.description} ${article.content}`
+            .toLowerCase()
 
-      return searchableText.includes(normalizedQuery)
-    }
+        return searchableText.includes(
+          normalizedQuery,
+        )
+      }
 
-    return (
-      !normalizedCategory ||
-      article.category === normalizedCategory
-    )
-  })
-
-  const totalArticles = articles.length
-
-  const safePage =
-    Number.isFinite(page) && page > 0
-      ? Math.floor(page)
-      : 1
-
-  const start =
-    (safePage - 1) * MOCK_PAGE_SIZE
-
-  const paginatedArticles = articles.slice(
-    start,
-    start + MOCK_PAGE_SIZE,
+      return (
+        !normalizedCategory ||
+        article.category === normalizedCategory
+      )
+    },
   )
 
+  const safePage = Math.max(1, Math.floor(Number(page) || 1))
+  const start = (safePage - 1) * NEWS_PAGE_SIZE
+
   return {
-    totalArticles,
-    articles: paginatedArticles,
+    totalArticles: matchingArticles.length,
+    articles: matchingArticles.slice(start, start + NEWS_PAGE_SIZE),
   }
 }
 

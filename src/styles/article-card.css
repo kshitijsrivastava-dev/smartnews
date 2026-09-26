@@ -3,8 +3,9 @@
   margin: 1.5rem 0 0;
   padding: 0;
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .article-list > li {
@@ -249,15 +250,22 @@
    RESPONSIVE GRID
    ========================= */
 
-@media (min-width: 768px) {
+/* Desktop: 3 columns */
+.article-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) and (max-width: 899px) {
   .article-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
   }
 }
 
-@media (min-width: 1024px) {
+/* Mobile: 1 column */
+@media (max-width: 767px) {
   .article-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 }

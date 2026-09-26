@@ -1,12 +1,28 @@
-import { useEffect, useState } from 'react'
-
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   getTopHeadlines,
+  NEWS_PAGE_SIZE,
   searchArticles,
 } from '../services/newsService.js'
 
-const DISPLAY_SIZE = 9
-const API_PAGE_SIZE = 10
+function requestNews({ category, q, country, language, page }) {
+  return q
+    ? searchArticles(q, { country, language, page })
+    : getTopHeadlines({ category, country, language, page })
+}
+
+function hasAnotherPage(result, page) {
+  const articles = Array.isArray(result.articles) ? result.articles : []
+  const totalArticles = Number(result.totalArticles) || 0
+
+  if (articles.length === 0) {
+    return false
+  }
+
+  return totalArticles > 0
+    ? totalArticles > page * NEWS_PAGE_SIZE
+    : articles.length >= NEWS_PAGE_SIZE
+}
 
 export function useNews({
   category,
@@ -18,146 +34,104 @@ export function useNews({
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
+  const pageRef = useRef(1)
+  const requestVersionRef = useRef(0)
+  const loadingMoreRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
+    const requestVersion = ++requestVersionRef.current
 
-    const request = q
-      ? searchArticles(q, {
-          country,
-          language,
-          page,
-        })
-      : getTopHeadlines({
-          category,
-          country,
-          language,
-          page,
-        })
+    pageRef.current = 1
+    loadingMoreRef.current = false
 
-    if (page === 1) {
-      setLoading(true)
-      setError(null)
-    } else {
-      setLoadingMore(true)
-      setError(null)
-    }
-
-    request
+    requestNews({ category, q, country, language, page: 1 })
       .then((result) => {
         if (cancelled) {
           return
         }
 
-        const newArticles = Array.isArray(
-          result.articles,
-        )
-          ? result.articles
+        const firstPage = Array.isArray(result.articles)
+          ? result.articles.slice(0, NEWS_PAGE_SIZE)
           : []
 
-        const totalArticles =
-          Number(result.totalArticles) || 0
-
-        if (page === 1) {
-          const firstNine = newArticles.slice(
-            0,
-            DISPLAY_SIZE,
-          )
-
-          setArticles(firstNine)
-
-          setHasMore(
-            newArticles.length > DISPLAY_SIZE ||
-              totalArticles > firstNine.length,
-          )
-        } else {
-          setArticles((currentArticles) => {
-            const existingIds = new Set(
-              currentArticles.map(
-                (article) => article.id,
-              ),
-            )
-
-            const uniqueArticles =
-              newArticles.filter(
-                (article) =>
-                  !existingIds.has(article.id),
-              )
-
-            const combined = [
-              ...currentArticles,
-              ...uniqueArticles,
-            ]
-
-            const visibleArticles =
-              combined.slice(
-                0,
-                Math.floor(
-                  combined.length / DISPLAY_SIZE,
-                ) * DISPLAY_SIZE,
-              )
-
-            setHasMore(
-              totalArticles >
-                visibleArticles.length ||
-                combined.length >
-                  visibleArticles.length,
-            )
-
-            return visibleArticles
-          })
-        }
-
+        setArticles(firstPage)
+        setHasMore(hasAnotherPage({ ...result, articles: firstPage }, 1))
         setError(null)
         setLoading(false)
-        setLoadingMore(false)
       })
       .catch((requestError) => {
         if (cancelled) {
           return
         }
 
-        setError(
-          requestError.message ||
-            (page === 1
-              ? 'Failed to load news'
-              : 'Failed to load more news'),
-        )
-
-        if (page === 1) {
-          setArticles([])
-          setLoading(false)
-        }
-
-        setLoadingMore(false)
+        setArticles([])
+        setError(requestError.message || 'Failed to load news')
+        setLoading(false)
       })
 
     return () => {
       cancelled = true
+      if (requestVersionRef.current === requestVersion) {
+        requestVersionRef.current += 1
+      }
     }
-  }, [
-    category,
-    q,
-    country,
-    language,
-    page,
-  ])
+  }, [category, q, country, language])
 
-  function loadMore() {
-    if (
-      loadingMore ||
-      loading ||
-      !hasMore
-    ) {
+  const loadMore = useCallback(async () => {
+    if (loadingMoreRef.current || loading || !hasMore) {
       return
     }
 
-    setPage(
-      (currentPage) => currentPage + 1,
-    )
-  }
+    loadingMoreRef.current = true
+    setLoadingMore(true)
+    setError(null)
+
+    const requestVersion = requestVersionRef.current
+    const nextPage = pageRef.current + 1
+
+    try {
+      const result = await requestNews({
+        category,
+        q,
+        country,
+        language,
+        page: nextPage,
+      })
+
+      if (requestVersionRef.current !== requestVersion) {
+        return
+      }
+
+      const newArticles = Array.isArray(result.articles)
+        ? result.articles
+        : []
+
+      setArticles((currentArticles) => {
+        const existingIds = new Set(
+          currentArticles.map((article) => article.id),
+        )
+        const uniqueArticles = newArticles.filter(
+          (article) => !existingIds.has(article.id),
+        )
+
+        return [...currentArticles, ...uniqueArticles]
+      })
+
+      pageRef.current = nextPage
+      setHasMore(hasAnotherPage(result, nextPage))
+    } catch (requestError) {
+      if (requestVersionRef.current === requestVersion) {
+        setError(requestError.message || 'Failed to load more articles')
+      }
+    } finally {
+      if (requestVersionRef.current === requestVersion) {
+        loadingMoreRef.current = false
+        setLoadingMore(false)
+      }
+    }
+  }, [category, q, country, language, loading, hasMore])
 
   return {
     articles,

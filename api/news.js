@@ -112,12 +112,11 @@ export default async function handler(req, res) {
   )
 
   /*
-   * GNews returns 10 articles per request.
-   * The frontend displays 9 at a time.
+   * Keep provider batches aligned with the frontend's 9-article pages.
    */
   gnewsUrl.searchParams.set(
     'max',
-    '10',
+    '9',
   )
 
   /*
