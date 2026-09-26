@@ -1,73 +1,184 @@
 const GNEWS_BASE_URL = 'https://gnews.io/api/v4'
-const SUCCESS_CACHE_CONTROL = 's-maxage=600, stale-while-revalidate=60'
+
+const SUCCESS_CACHE_CONTROL =
+  's-maxage=600, stale-while-revalidate=60'
 
 function readQueryValue(value) {
   if (Array.isArray(value)) {
-    return typeof value[0] === 'string' ? value[0].trim() : ''
+    return typeof value[0] === 'string'
+      ? value[0].trim()
+      : ''
   }
 
-  return typeof value === 'string' ? value.trim() : ''
+  return typeof value === 'string'
+    ? value.trim()
+    : ''
 }
 
-function sendJson(res, status, body, { cache = false } = {}) {
-  res.setHeader('Content-Type', 'application/json; charset=utf-8')
+function readPage(value) {
+  const parsed = Number(
+    readQueryValue(value) || '1',
+  )
+
+  if (
+    Number.isFinite(parsed) &&
+    parsed > 0
+  ) {
+    return Math.floor(parsed)
+  }
+
+  return 1
+}
+
+function sendJson(
+  res,
+  status,
+  body,
+  { cache = false } = {},
+) {
+  res.setHeader(
+    'Content-Type',
+    'application/json; charset=utf-8',
+  )
+
   res.setHeader(
     'Cache-Control',
-    cache ? SUCCESS_CACHE_CONTROL : 'no-store',
+    cache
+      ? SUCCESS_CACHE_CONTROL
+      : 'no-store',
   )
-  res.status(status).send(JSON.stringify(body))
+
+  res
+    .status(status)
+    .send(JSON.stringify(body))
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
-    sendJson(res, 405, { error: 'Method not allowed' })
+    sendJson(res, 405, {
+      error: 'Method not allowed',
+    })
     return
   }
 
-  const apiKey = process.env.GNEWS_API_KEY
+  const apiKey =
+    process.env.GNEWS_API_KEY
 
   if (!apiKey) {
-    sendJson(res, 500, { error: 'News service is not configured' })
+    sendJson(res, 500, {
+      error:
+        'News service is not configured',
+    })
     return
   }
 
-  const category = readQueryValue(req.query?.category)
-  const q = readQueryValue(req.query?.q)
-  const country = readQueryValue(req.query?.country)
-  const language = readQueryValue(req.query?.lang) || 'en'
+  const category =
+    readQueryValue(
+      req.query?.category,
+    )
 
-  const endpoint = q ? 'search' : 'top-headlines'
+  const q =
+    readQueryValue(req.query?.q)
 
-  const gnewsUrl = new URL(`${GNEWS_BASE_URL}/${endpoint}`)
+  const country =
+    readQueryValue(
+      req.query?.country,
+    )
 
-  gnewsUrl.searchParams.set('apikey', apiKey)
-  gnewsUrl.searchParams.set('lang', language)
+  const language =
+    readQueryValue(
+      req.query?.lang,
+    ) || 'en'
+
+  const page =
+    readPage(req.query?.page)
+
+  const endpoint = q
+    ? 'search'
+    : 'top-headlines'
+
+  const gnewsUrl = new URL(
+    `${GNEWS_BASE_URL}/${endpoint}`,
+  )
+
+  gnewsUrl.searchParams.set(
+    'apikey',
+    apiKey,
+  )
+
+  gnewsUrl.searchParams.set(
+    'lang',
+    language,
+  )
+
+  /*
+   * GNews returns 10 articles per request.
+   * The frontend displays 9 at a time.
+   */
+  gnewsUrl.searchParams.set(
+    'max',
+    '10',
+  )
+
+  /*
+   * Pass the requested page to GNews so
+   * Load More gets the next batch.
+   */
+  gnewsUrl.searchParams.set(
+    'page',
+    String(page),
+  )
 
   if (q) {
-    gnewsUrl.searchParams.set('q', q)
+    gnewsUrl.searchParams.set(
+      'q',
+      q,
+    )
   } else if (category) {
-    gnewsUrl.searchParams.set('category', category)
+    gnewsUrl.searchParams.set(
+      'category',
+      category,
+    )
   }
 
   if (country) {
-    gnewsUrl.searchParams.set('country', country)
+    gnewsUrl.searchParams.set(
+      'country',
+      country,
+    )
   }
 
   try {
-    const gnewsResponse = await fetch(gnewsUrl)
-    const payload = await gnewsResponse.json().catch(() => null)
+    const gnewsResponse =
+      await fetch(gnewsUrl.toString())
+
+    const payload =
+      await gnewsResponse
+        .json()
+        .catch(() => null)
 
     if (!gnewsResponse.ok) {
       sendJson(
         res,
         gnewsResponse.status,
-        payload ?? { error: 'Failed to fetch news' },
+        payload ?? {
+          error:
+            'Failed to fetch news',
+        },
       )
       return
     }
 
-    sendJson(res, 200, payload, { cache: true })
+    sendJson(
+      res,
+      200,
+      payload,
+      { cache: true },
+    )
   } catch {
-    sendJson(res, 502, { error: 'Unable to reach the news provider' })
+    sendJson(res, 502, {
+      error:
+        'Unable to reach the news provider',
+    })
   }
 }

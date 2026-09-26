@@ -18,7 +18,14 @@ function NewsResults({
   emptyMessage,
   onRetry,
 }) {
-  const { articles, error, loading } = useNews({
+  const {
+    articles,
+    error,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+  } = useNews({
     category,
     q,
     country,
@@ -29,34 +36,83 @@ function NewsResults({
     return <Spinner />
   }
 
-  if (error) {
-    return <ErrorMessage message={error} onRetry={onRetry} />
+  if (error && articles.length === 0) {
+    return (
+      <ErrorMessage
+        message={error}
+        onRetry={onRetry}
+      />
+    )
   }
 
   if (articles.length === 0) {
-    return <EmptyState message={emptyMessage} />
+    return (
+      <EmptyState message={emptyMessage} />
+    )
   }
 
-  return <ArticleList articles={articles} />
+  return (
+    <>
+      <ArticleList articles={articles} />
+
+      {error && articles.length > 0 ? (
+        <p className="news-feed__load-error">
+          {error}
+        </p>
+      ) : null}
+
+      {hasMore ? (
+        <div className="news-feed__load-more">
+          <button
+            type="button"
+            className="news-feed__load-more-button"
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore
+              ? 'Loading...'
+              : 'Load More'}
+          </button>
+        </div>
+      ) : null}
+    </>
+  )
 }
 
-function NewsFeed({ category, q, emptyMessage }) {
+function NewsFeed({
+  category,
+  q,
+  emptyMessage,
+}) {
   const [attempt, setAttempt] = useState(0)
 
   const [language, setLanguage] = useState(
-    () => localStorage.getItem('smartnews-language') ?? 'en',
+    () =>
+      localStorage.getItem(
+        'smartnews-language',
+      ) ?? 'en',
   )
 
   const [country, setCountry] = useState(
-    () => localStorage.getItem('smartnews-country') ?? 'in',
+    () =>
+      localStorage.getItem(
+        'smartnews-country',
+      ) ?? 'in',
   )
 
   useEffect(() => {
     const handleLanguageChange = () => {
-      setLanguage(localStorage.getItem('smartnews-language') ?? 'en')
+      setLanguage(
+        localStorage.getItem(
+          'smartnews-language',
+        ) ?? 'en',
+      )
     }
 
-    window.addEventListener('smartnews-language-change', handleLanguageChange)
+    window.addEventListener(
+      'smartnews-language-change',
+      handleLanguageChange,
+    )
 
     return () => {
       window.removeEventListener(
@@ -68,10 +124,17 @@ function NewsFeed({ category, q, emptyMessage }) {
 
   useEffect(() => {
     const handleCountryChange = () => {
-      setCountry(localStorage.getItem('smartnews-country') ?? 'in')
+      setCountry(
+        localStorage.getItem(
+          'smartnews-country',
+        ) ?? 'in',
+      )
     }
 
-    window.addEventListener('smartnews-country-change', handleCountryChange)
+    window.addEventListener(
+      'smartnews-country-change',
+      handleCountryChange,
+    )
 
     return () => {
       window.removeEventListener(
@@ -89,7 +152,11 @@ function NewsFeed({ category, q, emptyMessage }) {
       country={country}
       language={language}
       emptyMessage={emptyMessage}
-      onRetry={() => setAttempt((value) => value + 1)}
+      onRetry={() =>
+        setAttempt(
+          (value) => value + 1,
+        )
+      }
     />
   )
 }
