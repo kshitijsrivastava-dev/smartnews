@@ -8,8 +8,8 @@ import EmptyState from '../ui/EmptyState.jsx'
 
 import ErrorMessage from '../ui/ErrorMessage.jsx'
 
-import Spinner from '../ui/Spinner.jsx'
 import { useTranslation } from '../../hooks/useLanguage.js'
+import SkeletonArticleGrid from './SkeletonArticleGrid.jsx'
 
 function NewsResults({
   category,
@@ -35,7 +35,7 @@ function NewsResults({
   const { t } = useTranslation()
 
   if (loading && articles.length === 0) {
-    return <Spinner label={t('loading')} />
+    return <SkeletonArticleGrid label={t('loading')} />
   }
 
   if (error && articles.length === 0) {

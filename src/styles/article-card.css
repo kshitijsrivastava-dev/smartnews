@@ -21,6 +21,18 @@
   background: var(--bg-elevated);
   border: 1px solid var(--line);
   overflow: hidden;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .article-card:not(.article-card--skeleton):hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 0.5rem 1.35rem rgba(0, 0, 0, 0.16);
+  }
 }
 
 .article-card__media {
@@ -145,6 +157,7 @@
   border-top: 1px solid var(--line);
   color: var(--ink-muted);
   font-size: 0.95rem;
+  animation: summary-panel-in 180ms ease-out both;
 }
 
 .ai-summary__panel p {
@@ -267,5 +280,141 @@
   .article-list {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+  }
+}
+
+/* Initial article loading placeholders */
+.article-skeleton-status {
+  width: 100%;
+}
+
+.article-list--skeleton {
+  pointer-events: none;
+}
+
+.article-card--skeleton {
+  animation: none;
+}
+
+.skeleton-block {
+  display: block;
+  background-color: var(--accent-soft);
+  background-image: linear-gradient(
+    100deg,
+    var(--accent-soft) 20%,
+    var(--bg-elevated) 48%,
+    var(--accent-soft) 76%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.55s ease-in-out infinite;
+}
+
+.skeleton-block--image {
+  width: 100%;
+  height: 100%;
+}
+
+.skeleton-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.skeleton-group--title {
+  margin: 0 0 0.15rem;
+}
+
+.skeleton-line {
+  width: 100%;
+  height: 0.72rem;
+}
+
+.skeleton-group--title .skeleton-line {
+  height: 1rem;
+}
+
+.skeleton-line--short {
+  width: 67%;
+}
+
+.skeleton-line--medium {
+  width: 78%;
+}
+
+.skeleton-line--meta {
+  width: 48%;
+  height: 0.58rem;
+}
+
+.article-card--skeleton .article-card__actions {
+  margin-top: auto;
+}
+
+.skeleton-action {
+  width: 56%;
+  height: 0.68rem;
+}
+
+.skeleton-reading-time {
+  width: 22%;
+  height: 0.58rem;
+}
+
+.skeleton-summary-action {
+  width: 34%;
+  height: 0.62rem;
+  margin-top: 0.25rem;
+}
+
+/* Articles enter gently when a result batch is rendered. */
+.article-list:not(.article-list--skeleton) .article-card {
+  animation: article-card-in 340ms ease-out backwards;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes article-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes summary-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-card,
+  .skeleton-block,
+  .article-list:not(.article-list--skeleton) .article-card,
+  .ai-summary__panel {
+    animation: none;
+    transition: none;
+  }
+
+  .article-card:not(.article-card--skeleton):hover {
+    transform: none;
   }
 }
