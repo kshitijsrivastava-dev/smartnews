@@ -7,6 +7,32 @@
   padding: 0.5rem 0 1rem;
 }
 
+.info-page {
+  max-width: 48rem;
+  padding: 0.5rem 0 1rem;
+}
+
+.info-page > h1 {
+  margin-bottom: 1.25rem;
+}
+
+.info-page > p,
+.info-page__steps {
+  color: var(--ink-muted);
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.info-page__steps {
+  display: grid;
+  gap: 0.8rem;
+  padding-left: 1.5rem;
+}
+
+.info-page__steps li {
+  padding-left: 0.35rem;
+}
+
 .page-placeholder__eyebrow {
   margin: 0 0 0.5rem;
   font-size: 0.72rem;
