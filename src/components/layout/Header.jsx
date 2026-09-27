@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -17,6 +17,13 @@ import { useTranslation } from '../../hooks/useLanguage.js'
 
 function Header() {
   const [searchParams] = useSearchParams()
+  const [isCompact, setIsCompact] = useState(
+    () => window.scrollY > 80,
+  )
+  const compactState = useRef(isCompact)
+  const stateAnchorY = useRef(window.scrollY)
+  const transitionLockUntil = useRef(0)
+  const transitionTimer = useRef(null)
 
   const searchKey = searchParams.get('q') ?? ''
   const { language, locale, t } = useTranslation()
@@ -37,6 +44,67 @@ function Header() {
       return countries
     }
   }, [locale])
+
+  const setCompactMode = useCallback((compact) => {
+    if (compactState.current === compact) return
+
+    if (transitionTimer.current !== null) {
+      window.clearTimeout(transitionTimer.current)
+      transitionTimer.current = null
+    }
+
+    compactState.current = compact
+    setIsCompact(compact)
+    stateAnchorY.current = window.scrollY
+    transitionLockUntil.current = Date.now() + 230
+    transitionTimer.current = window.setTimeout(() => {
+      transitionTimer.current = null
+      transitionLockUntil.current = 0
+      stateAnchorY.current = window.scrollY
+    }, 230)
+  }, [])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = Math.max(0, window.scrollY)
+
+      if (currentY <= 32) {
+        if (transitionTimer.current !== null) {
+          window.clearTimeout(transitionTimer.current)
+          transitionTimer.current = null
+        }
+        transitionLockUntil.current = 0
+        stateAnchorY.current = currentY
+        setCompactMode(false)
+        return
+      }
+
+      const lockRemaining = transitionLockUntil.current - Date.now()
+      if (lockRemaining > 0) return
+
+      const displacement = currentY - stateAnchorY.current
+
+      if (
+        !compactState.current &&
+        currentY > 80 &&
+        displacement >= 28
+      ) {
+        setCompactMode(true)
+      } else if (compactState.current && displacement <= -28) {
+        setCompactMode(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (transitionTimer.current !== null) {
+        window.clearTimeout(transitionTimer.current)
+        transitionTimer.current = null
+      }
+    }
+  }, [setCompactMode])
 
   useEffect(() => {
     const handleLanguageChange = () => {
@@ -88,8 +156,23 @@ function Header() {
     window.dispatchEvent(new Event('smartnews-country-change'))
   }
 
+  function handlePointerEnter(event) {
+    if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return
+    const pointerMovement =
+      Math.abs(event.movementX || 0) + Math.abs(event.movementY || 0)
+    if (pointerMovement === 0) return
+
+    if (compactState.current) {
+      stateAnchorY.current = window.scrollY
+      setCompactMode(false)
+    }
+  }
+
   return (
-    <header className="site-header">
+    <header
+      className={`site-header${isCompact ? ' site-header--compact' : ''}`}
+      onPointerEnter={handlePointerEnter}
+    >
       <div className="site-header__top">
         <div
           className="site-header__tools site-header__tools--left"
