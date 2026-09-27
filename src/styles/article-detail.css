@@ -1,11 +1,11 @@
 .article-detail {
   width: min(100%, 64rem);
   margin: 0 auto;
-  padding: 0.75rem 0 2rem;
+  padding: 0.6rem 0 2rem;
 }
 
 .article-detail__header {
-  max-width: 50rem;
+  max-width: 56rem;
   margin: 0 auto;
   text-align: center;
 }
@@ -22,7 +22,7 @@
 }
 
 .article-detail__eyebrow {
-  margin: 0.85rem 0 0.6rem;
+  margin: 0.45rem 0 0.35rem;
   color: var(--accent);
   font-size: 0.7rem;
   letter-spacing: 0.16em;
@@ -31,24 +31,24 @@
 
 .article-detail__title {
   margin: 0 auto;
-  font-size: clamp(2.25rem, 5.5vw, 4.4rem);
-  line-height: 1.08;
+  font-size: clamp(1.9rem, 4vw, 3.1rem);
+  line-height: 1.06;
   text-wrap: balance;
 }
 
 .article-detail__description {
   max-width: 43rem;
-  margin: 1.1rem auto 0;
+  margin: 0.65rem auto 0;
   color: var(--ink-muted);
   font-family: var(--font-serif);
-  font-size: clamp(1.1rem, 2vw, 1.35rem);
-  line-height: 1.55;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.45;
 }
 
 .article-detail__hero {
   width: 100%;
   aspect-ratio: 16 / 9;
-  margin: 2rem auto 2.25rem;
+  margin: 1.15rem auto 1.5rem;
   overflow: hidden;
   background: var(--accent-soft);
 }
@@ -128,18 +128,18 @@
   }
 
   .article-detail__title {
-    font-size: clamp(2rem, 9vw, 3rem);
+    font-size: clamp(1.85rem, 8vw, 2.65rem);
     line-height: 1.12;
   }
 
   .article-detail__description {
-    margin-top: 0.9rem;
-    font-size: 1.08rem;
+    margin-top: 0.65rem;
+    font-size: 1rem;
   }
 
   .article-detail__hero {
     aspect-ratio: 4 / 3;
-    margin: 1.5rem auto 1.75rem;
+    margin: 1.1rem auto 1.4rem;
   }
 
   .article-detail__summary {
