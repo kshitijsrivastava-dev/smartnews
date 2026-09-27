@@ -1,168 +1,216 @@
-```markdown
 # SmartNews
 
 A React-based multi-source news aggregator with AI-powered article summarization. Browse and search news across multiple categories and countries, in 10 languages including English and 9 Indian languages, and get a concise AI-generated summary of any article without leaving the app.
 
-**Live Demo:** https://smartnews-web.vercel.app/
+**Live demo:** [https://smartnews-web.vercel.app/](https://smartnews-web.vercel.app/](https://smartnews-web.vercel.app/?utm_source=gemini))
 
 ## Screenshots
 
-<h3 align="center">Homepage</h3>
+### Homepage
 
-<p align="center">
-  <img src="./screenshots/smartnews-home.png" alt="SmartNews Homepage" width="900">
-</p>
 
-<h3 align="center">Category Page</h3>
 
-<p align="center">
-  <img src="./screenshots/smartnews-category.png" alt="SmartNews Category Page" width="900">
-</p>
+![SmartNews Homepage](./screenshots/smartnews-home.png)
 
-<h3 align="center">AI Article Summary</h3>
 
-<p align="center">
-  <img src="./screenshots/smartnews-aisummary.png" alt="SmartNews AI Article Summary" width="900">
-</p>
 
-<h3 align="center">Multilingual Support</h3>
+### Category Page
 
-<p align="center">
-  <img src="./screenshots/smartnews-multilingual.png" alt="SmartNews Multilingual Support" width="900">
-</p>
+
+
+![SmartNews Category Page](./screenshots/smartnews-category.png)
+
+
+
+### AI Article Summary
+
+
+
+![SmartNews AI Article Summary](./screenshots/smartnews-aisummary.png)
+
+
+
+### Multilingual Support
+
+
+
+![SmartNews Multilingual Support](./screenshots/smartnews-multilingual.png)
+
+
 
 ## Features
 
-- **Multi-source news aggregation** via the GNews API — browse news by category or search for any topic
+- **Multi-source news aggregation** via the GNews API — browse by category or search any topic
 - **AI article summaries** powered by Google's Gemini API — get a concise 4–6 point summary without opening the original article
-- **Multilingual support** — browse news and generate summaries in English, Hindi, Bengali, Gujarati, Kannada, Malayalam, Marathi, Punjabi, Tamil, and Telugu
-- **Category-based browsing** — explore National, International, Business, Technology, Sports, Science, Health, and Entertainment news
-- **Article pages** — view article details, AI summaries, and links to the original publisher
-- **Search** — search headlines and topics across available news
+- **Multilingual support** — browse news and read summaries in 10 languages including English and 9 Indian languages
 - **Country selection** — switch the news feed's country focus
+- **Category-based browsing** — National, International, Business, Technology, Sports, Science, Health, and Entertainment
+- **Article pages** — view article details, AI summaries, and direct links to the original publisher
+- **Search** — search headlines and topics across available news
 - **Light/dark theme** with persisted preference
-- **Summary caching** — summaries are cached per article and language in localStorage to avoid unnecessary regeneration
-- **Responsive design** — optimized for desktop and smaller screens
-- **No login or database required** — preferences and cached summaries persist locally in the browser
+- **Summary caching** — summaries are cached per article and language in `localStorage` to avoid unnecessary regeneration
+- **Responsive design** — optimized for desktop and mobile viewports
+- **No login, no database required** — all preferences and cached summaries persist locally in the browser
 
-## Tech Stack
+## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React, React Router, Vite, plain CSS |
-| Backend | Vercel Serverless Functions |
-| News Data | GNews API |
-| AI Summaries | Google Gemini API |
-| Persistence | Browser localStorage |
-| Deployment | Vercel + GitHub |
+| Layer | Technology | 
+
+ | ----- | ----- | 
+
+| **Frontend** | React, React Router, Vite, plain CSS | 
+
+| **Backend** | Vercel Serverless Functions | 
+
+| **News data** | GNews API | 
+
+| **AI summaries** | Google Gemini API | 
+
+| **Persistence** | Browser `localStorage` (no database) | 
+
+| **Deployment** | Vercel + GitHub | 
 
 ## Architecture
 
-```text
-                         USER
-                           |
-                           v
-                  +-----------------+
-                  | React Frontend  |
-                  +--------+--------+
-                           |
-             +-------------+-------------+
-             |                           |
-             v                           v
-        /api/news                  /api/summarize
-             |                           |
-             v                           v
-         GNews API                  Gemini API
-             |                           |
-             v                           v
-       News articles                AI summary
-             |                           |
-             +-------------+-------------+
-                           v
-                      React UI
 ```
 
-Both external API keys (`GNEWS_API_KEY` and `GEMINI_API_KEY`) are kept server-side inside the Vercel serverless functions. The browser does not access these keys directly; requests from the React frontend go through `/api/news` or `/api/summarize`.
+                        USER
 
-## Getting Started
+                          |
+
+                          v
+
+                 +-----------------+
+
+                 | React Frontend  |
+
+                 +--------+--------+
+
+                          |
+
+             +------------+------------+
+
+             |                         |
+
+             v                         v
+
+        /api/news               /api/summarize
+
+             |                         |
+
+             v                         v
+
+         GNews API                Gemini API
+
+             |                         |
+
+             v                         v
+
+       News articles               AI summary
+
+             |                         |
+
+             +------------+------------+
+
+                          |
+
+                          v
+
+                       React UI
+
+```
+
+Both external API keys `GNEWS_API_KEY`, `GEMINI_API_KEY`) live only on the server side, inside the two Vercel serverless functions. The browser never sees them directly — every request from React goes through `/api/news` or `/api/summarize` first.
+
+## Getting started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v18 or later
-- A [GNews API key](https://gnews.io/)
-- A [Google Gemini API key](https://ai.google.dev/)
+- [Node.js]([https://nodejs.org/?utm_source=gemini](https://nodejs.org/?utm_source=gemini)) (v18 or later recommended)
+- A free [GNews API key]([https://gnews.io/?utm_source=gemini](https://gnews.io/?utm_source=gemini))
+- A free [Google Gemini API key]([https://ai.google.dev/?utm_source=gemini](https://ai.google.dev/?utm_source=gemini))
 
-### Installation
+### Setup
 
-1. Clone the repository:
-  ```bash
-   git clone https://github.com/kshitijsrivastava-dev/smartnews.git
+1. **Clone the repository**
+  ```
+
+   git clone [https://github.com/<your-username>/smartnews.git](https://github.com/<your-username>/smartnews.git)
+
    cd smartnews
+
   ```
-2. Install dependencies:
-  ```bash
+2. **Install dependencies**
+  ```
+
    npm install
+
   ```
-3. Create a `.env.local` file in the project root and add your API keys:
-  ```env
-   GNEWS_API_KEY=your_gnews_api_key
-   GEMINI_API_KEY=your_gemini_api_key
+3. **Set up environment variables**
+  Copy `.env.example` to a new file named `.env.local`:
+   Open `.env.local` and add your API keys:
+4. **Run the development server**
   ```
-4. Start the development server:
-  ```bash
+
    npm run dev
+
   ```
-   Open the local URL shown by Vite in the terminal.
-5. Build the project for production:
-  ```bash
+   The app will be available at `http://localhost:3000` (or whatever port Vite prints in the terminal).
+5. **Build for production**
+  ```
+
    npm run build
+
   ```
 
-## Deployment
+### Deployment
 
-The project is deployed on Vercel.
+This project is set up to deploy automatically on Vercel:
 
-To deploy your own instance:
+1. Connect your GitHub repository to a Vercel project.
+2. Add the environment variables `GNEWS_API_KEY`, `GEMINI_API_KEY`) in the Vercel dashboard under **Project Settings → Environment Variables**.
+3. Every push to `main` will automatically trigger a new deployment.
 
-1. Connect the GitHub repository to a Vercel project.
-2. Add the following environment variables in **Project Settings → Environment Variables**:
-  - `GNEWS_API_KEY`
-  - `GEMINI_API_KEY`
-3. Deploy the project.
+## Project structure
 
-Pushes to the `main` branch can trigger new Vercel deployments when Git integration is enabled.
+```
 
-## Project Structure
-
-```text
 smartnews/
+
 ├── api/
-│   ├── news.js              # News API serverless function
-│   └── summarize.js         # Gemini AI summary serverless function
-│
+
+│   ├── news.js           Serverless function — calls GNews, returns JSON
+
+│   └── summarize.js      Serverless function — calls Gemini, returns a summary
+
 ├── src/
-│   ├── components/          # Reusable UI and news components
-│   ├── data/                # Countries, languages, and static configuration
-│   ├── hooks/               # Custom React hooks
-│   ├── services/            # Frontend API/data service layer
-│   └── styles/              # Application CSS
-│
-├── screenshots/             # README project screenshots
-│   ├── smartnews-home.png
-│   ├── smartnews-category.png
-│   ├── smartnews-aisummary.png
-│   └── smartnews-multilingual.png
-│
-├── .env.example             # Environment variable template
+
+│   ├── components/
+
+│   │   ├── layout/       Header, Footer, Layout
+
+│   │   ├── news/         ArticleCard, NewsFeed, CategoryNav, SearchBar, AiSummary
+
+│   │   └── ui/           ThemeToggle, Dropdown, Spinner, ErrorMessage, EmptyState
+
+│   ├── data/             countries.js, languages.js
+
+│   ├── hooks/            useNews.js and other custom hooks
+
+│   ├── services/         newsService.js — talks to /api/news
+
+│   └── styles/           plain CSS files (header.css, layout.css, etc.)
+
+├── screenshots/          README preview images
+
+├── .env.example
+
 ├── package.json
-└── README.md
+
+└── [README.md](http://README.md)
+
 ```
 
 ## License
 
-This project is for personal and portfolio use.
-
-```
-
-```
-
+This project is for personal/portfolio use.
