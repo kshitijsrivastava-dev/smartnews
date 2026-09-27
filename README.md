@@ -6,7 +6,29 @@ A React-based multi-source news aggregator with AI-powered article summarization
 
 ## Screenshots
 
+### Homepage
+
+
+
 ![SmartNews Homepage](./screenshots/smartnews-home.png)
+
+
+
+### Category Page
+
+
+
+![SmartNews Category Page](./screenshots/smartnews-category.png)
+
+
+
+### Multilingual Support
+
+
+
+![SmartNews Multilingual Support](./screenshots/smartnews-multilingual.png)
+
+
 
 ## Features
 
