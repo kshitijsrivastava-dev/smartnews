@@ -4,6 +4,10 @@ A React-based multi-source news aggregator with AI-powered article summarization
 
 **Live demo:** [https://smartnews-web.vercel.app/](https://smartnews-web.vercel.app/)
 
+## Screenshots
+
+![SmartNews Homepage](./screenshots/smartnews-home.png)
+
 ## Features
 
 - **Multi-source news aggregation** via the GNews API — browse by category (National, International, Business, Technology, Sports, Science, Entertainment) or search any topic
@@ -13,8 +17,6 @@ A React-based multi-source news aggregator with AI-powered article summarization
 - **Light/dark theme** with persisted preference
 - **Summary caching** — summaries are cached per article + language in localStorage so you're not re-generating the same summary twice
 - **No login, no database required** — all preferences persist locally in the browser
-
-
 
 ## Tech stack
 
@@ -27,8 +29,6 @@ A React-based multi-source news aggregator with AI-powered article summarization
 | AI summaries | Google Gemini API                    |
 | Persistence  | Browser localStorage (no database)   |
 | Deployment   | Vercel + GitHub                      |
-
-
 
 
 ## Architecture
@@ -61,15 +61,11 @@ Both external API keys (`GNEWS_API_KEY`, `GEMINI_API_KEY`) live only on the serv
 
 ## Getting started
 
-
-
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or later recommended)
 - A free [GNews API key](https://gnews.io/)
 - A free [Google Gemini API key](https://ai.google.dev/)
-
-
 
 ### Setup
 
@@ -94,8 +90,6 @@ Both external API keys (`GNEWS_API_KEY`, `GEMINI_API_KEY`) live only on the serv
    npm run build
   ```
 
-
-
 ### Deployment
 
 This project is set up to deploy automatically on Vercel. Connect the GitHub repository to a Vercel project, add the same two environment variables (`GNEWS_API_KEY`, `GEMINI_API_KEY`) in the Vercel dashboard under Project Settings → Environment Variables, and every push to `main` triggers a new deployment.
@@ -117,8 +111,6 @@ api/
 ├── news.js             Serverless function — calls GNews, returns JSON
 └── summarize.js        Serverless function — calls Gemini, returns a summary
 ```
-
-
 
 ## License
 
