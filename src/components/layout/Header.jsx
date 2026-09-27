@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -18,12 +25,11 @@ import { useTranslation } from '../../hooks/useLanguage.js'
 function Header() {
   const [searchParams] = useSearchParams()
   const [isCompact, setIsCompact] = useState(
-    () => window.scrollY > 80,
+    () => window.scrollY >= 120,
   )
-  const compactState = useRef(isCompact)
-  const stateAnchorY = useRef(window.scrollY)
-  const transitionLockUntil = useRef(0)
-  const transitionTimer = useRef(null)
+  const compactMode = useRef(isCompact)
+  const headerElement = useRef(null)
+  const spacerElement = useRef(null)
 
   const searchKey = searchParams.get('q') ?? ''
   const { language, locale, t } = useTranslation()
@@ -36,6 +42,46 @@ function Header() {
     () => localStorage.getItem('smartnews-country') ?? 'in',
   )
 
+  const setCompactMode = useCallback((compact) => {
+    if (compactMode.current === compact) return
+    compactMode.current = compact
+    setIsCompact(compact)
+  }, [])
+
+  useLayoutEffect(() => {
+    const header = headerElement.current
+    const spacer = spacerElement.current
+    if (!header || !spacer) return undefined
+
+    const setSpacerHeight = (height) => {
+      const nextHeight = `${Math.ceil(height)}px`
+      if (spacer.style.height !== nextHeight) {
+        spacer.style.height = nextHeight
+      }
+    }
+
+    setSpacerHeight(header.offsetHeight)
+    if (typeof ResizeObserver === 'undefined') {
+      const updateSpacer = () => setSpacerHeight(header.offsetHeight)
+      header.addEventListener('transitionend', updateSpacer)
+      window.addEventListener('resize', updateSpacer)
+      return () => {
+        header.removeEventListener('transitionend', updateSpacer)
+        window.removeEventListener('resize', updateSpacer)
+      }
+    }
+
+    const observer = new ResizeObserver(([entry]) => {
+      const borderBox = Array.isArray(entry.borderBoxSize)
+        ? entry.borderBoxSize[0]
+        : entry.borderBoxSize
+      setSpacerHeight(borderBox?.blockSize ?? header.offsetHeight)
+    })
+    observer.observe(header)
+
+    return () => observer.disconnect()
+  }, [])
+
   const localizedCountries = useMemo(() => {
     try {
       const names = new Intl.DisplayNames([locale], { type: 'region' })
@@ -45,64 +91,29 @@ function Header() {
     }
   }, [locale])
 
-  const setCompactMode = useCallback((compact) => {
-    if (compactState.current === compact) return
-
-    if (transitionTimer.current !== null) {
-      window.clearTimeout(transitionTimer.current)
-      transitionTimer.current = null
+  useEffect(() => {
+    let animationFrame = 0
+    const updateHeader = () => {
+      animationFrame = 0
+      const currentY = window.scrollY
+      if (currentY < 80) {
+        setCompactMode(false)
+      } else if (currentY >= 120) {
+        setCompactMode(true)
+      }
     }
 
-    compactState.current = compact
-    setIsCompact(compact)
-    stateAnchorY.current = window.scrollY
-    transitionLockUntil.current = Date.now() + 230
-    transitionTimer.current = window.setTimeout(() => {
-      transitionTimer.current = null
-      transitionLockUntil.current = 0
-      stateAnchorY.current = window.scrollY
-    }, 230)
-  }, [])
-
-  useEffect(() => {
     const handleScroll = () => {
-      const currentY = Math.max(0, window.scrollY)
-
-      if (currentY <= 32) {
-        if (transitionTimer.current !== null) {
-          window.clearTimeout(transitionTimer.current)
-          transitionTimer.current = null
-        }
-        transitionLockUntil.current = 0
-        stateAnchorY.current = currentY
-        setCompactMode(false)
-        return
-      }
-
-      const lockRemaining = transitionLockUntil.current - Date.now()
-      if (lockRemaining > 0) return
-
-      const displacement = currentY - stateAnchorY.current
-
-      if (
-        !compactState.current &&
-        currentY > 80 &&
-        displacement >= 28
-      ) {
-        setCompactMode(true)
-      } else if (compactState.current && displacement <= -28) {
-        setCompactMode(false)
+      if (animationFrame === 0) {
+        animationFrame = window.requestAnimationFrame(updateHeader)
       }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-
+    handleScroll()
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      if (transitionTimer.current !== null) {
-        window.clearTimeout(transitionTimer.current)
-        transitionTimer.current = null
-      }
+      if (animationFrame !== 0) window.cancelAnimationFrame(animationFrame)
     }
   }, [setCompactMode])
 
@@ -162,64 +173,69 @@ function Header() {
       Math.abs(event.movementX || 0) + Math.abs(event.movementY || 0)
     if (pointerMovement === 0) return
 
-    if (compactState.current) {
-      stateAnchorY.current = window.scrollY
-      setCompactMode(false)
-    }
+    if (compactMode.current) setCompactMode(false)
   }
 
   return (
-    <header
-      className={`site-header${isCompact ? ' site-header--compact' : ''}`}
-      onPointerEnter={handlePointerEnter}
-    >
-      <div className="site-header__top">
-        <div
-          className="site-header__tools site-header__tools--left"
-          role="group"
-          aria-label={t('countryPrefs')}
-        >
-          <Dropdown
-            className="country-selector"
-            label={t('country')}
-            value={selectedCountry}
-            options={localizedCountries}
-            onChange={handleCountryChange}
-            ariaLabel={t('selectCountry')}
-          />
+    <>
+      <header
+        ref={headerElement}
+        className={`site-header${isCompact ? ' site-header--compact' : ''}`}
+        onPointerEnter={handlePointerEnter}
+      >
+        <div className="site-header__top">
+          <div
+            className="site-header__tools site-header__tools--left"
+            role="group"
+            aria-label={t('countryPrefs')}
+          >
+            <Dropdown
+              className="country-selector"
+              label={t('country')}
+              value={selectedCountry}
+              options={localizedCountries}
+              onChange={handleCountryChange}
+              ariaLabel={t('selectCountry')}
+            />
+          </div>
+
+          <div className="site-header__identity">
+            <Link to="/" className="site-header__brand">
+              SmartNews
+            </Link>
+            <p className="site-header__kicker">{t('tagline')}</p>
+          </div>
+
+          <div
+            className="site-header__tools site-header__tools--right"
+            role="group"
+            aria-label={t('langPrefs')}
+          >
+            <Dropdown
+              className="language-selector"
+              label={t('language')}
+              value={selectedLanguage || language}
+              options={languages}
+              onChange={handleLanguageChange}
+              ariaLabel={t('selectLanguage')}
+            />
+
+            <ThemeToggle />
+          </div>
         </div>
 
-        <div className="site-header__identity">
-          <Link to="/" className="site-header__brand">
-            SmartNews
-          </Link>
-          <p className="site-header__kicker">{t('tagline')}</p>
+        <div className="site-header__search">
+          <SearchBar key={searchKey} />
         </div>
 
-        <div
-          className="site-header__tools site-header__tools--right"
-          role="group"
-          aria-label={t('langPrefs')}
-        >
-          <Dropdown
-            className="language-selector"
-            label={t('language')}
-            value={selectedLanguage || language}
-            options={languages}
-            onChange={handleLanguageChange}
-            ariaLabel={t('selectLanguage')}
-          />
-
-          <ThemeToggle />
-        </div>
-      </div>
-
-      <div className="site-header__search">
-        <SearchBar key={searchKey} />
-      </div>
-
-      <CategoryNav />
-    </header>
+        <CategoryNav />
+      </header>
+      <div
+        ref={spacerElement}
+        className="site-header-spacer"
+        aria-hidden="true"
+      />
+    </>
   )
 }
 

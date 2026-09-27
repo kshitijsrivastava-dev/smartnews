@@ -2,6 +2,7 @@
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  overflow-anchor: none;
 }
 
 .app-main {
