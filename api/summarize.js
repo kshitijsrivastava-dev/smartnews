@@ -1,9 +1,6 @@
 import { languages } from '../src/data/languages.js'
 
-const GEMINI_MODEL = 'gemini-3.5-flash'
-
-const MAX_ATTEMPTS = 3
-const RETRY_DELAY_MS = 600
+const GEMINI_MODEL = 'gemini-3.5-flash-lite'
 
 export const config = {
   runtime: 'nodejs',
@@ -75,15 +72,21 @@ function parseBulletPoints(rawText) {
     .filter(Boolean)
 }
 
-function buildPrompt({ title, description, content, language }) {
+function buildPrompt({
+  title,
+  description,
+  content,
+  language,
+}) {
   return [
-    `Summarize the following news article as 4 to 6 concise, factual bullet points in ${language}.`,
-    `Write the entire summary in ${language}.`,
-    'Use only the provided title, description, and content.',
-    'Do not invent facts, quotes, or details that are not present.',
-    'If the source text is truncated, summarize only what is available.',
-    'Return each point on its own line, starting with a hyphen (-).',
-    'Do not use markdown headings, bold text, or numbering.',
+    `Summarize this news article in ${language}.`,
+    'Return exactly 4 to 6 concise factual bullet points.',
+    'Use only the information provided below.',
+    'Do not invent facts, quotes, names, dates, or details.',
+    'If the article content is incomplete, summarize only the available information.',
+    'Write the entire response in the requested language.',
+    'Start every bullet point with a hyphen (-).',
+    'Do not add a heading, introduction, conclusion, or extra explanation.',
     '',
     `Title: ${title || 'Unavailable'}`,
     `Description: ${description || 'Unavailable'}`,
@@ -91,78 +94,20 @@ function buildPrompt({ title, description, content, language }) {
   ].join('\n')
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function isQuotaOrRateLimitError(error) {
-  const message = String(error?.message || error || '').toLowerCase()
-  const status = error?.status ?? error?.code
-
-  return (
-    status === 429 ||
-    message.includes('429') ||
-    message.includes('quota') ||
-    message.includes('rate limit') ||
-    message.includes('resource_exhausted')
-  )
-}
-
-async function generateWithRetry(ai, prompt) {
-  let lastError = null
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    try {
-      const response = await ai.models.generateContent({
-        model: GEMINI_MODEL,
-        contents: prompt,
-      })
-
-      const summary = readSummaryText(response)
-
-      if (summary) {
-        return summary
-      }
-
-      lastError = new Error('Empty response from Gemini')
-    } catch (error) {
-      lastError = error
-
-      console.error(`Gemini attempt ${attempt} failed:`, {
-        message: error?.message,
-        status: error?.status,
-        code: error?.code,
-        name: error?.name,
-      })
-
-      if (isQuotaOrRateLimitError(error)) {
-        throw error
-      }
-    }
-
-    if (attempt < MAX_ATTEMPTS) {
-      await delay(RETRY_DELAY_MS * attempt)
-    }
-  }
-
-  throw lastError ?? new Error('Gemini request failed')
-}
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    sendJson(res, 405, { error: 'Method not allowed' })
+    sendJson(res, 405, {
+      error: 'Method not allowed',
+    })
     return
   }
 
   const apiKey = process.env.GEMINI_API_KEY
 
   if (!apiKey) {
-    console.error('GEMINI_API_KEY is not configured')
-
     sendJson(res, 500, {
       error: 'Summary service is not configured',
     })
-
     return
   }
 
@@ -172,7 +117,6 @@ export default async function handler(req, res) {
     sendJson(res, 400, {
       error: 'Request body must be JSON',
     })
-
     return
   }
 
@@ -187,7 +131,6 @@ export default async function handler(req, res) {
     sendJson(res, 400, {
       error: 'Article text is required to generate a summary',
     })
-
     return
   }
 
@@ -205,7 +148,35 @@ export default async function handler(req, res) {
       language,
     })
 
-    const summary = await generateWithRetry(ai, prompt)
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: prompt,
+
+      config: {
+        maxOutputTokens: 300,
+
+        thinkingConfig: {
+          thinkingLevel: 'low',
+        },
+
+        httpOptions: {
+          timeout: 12000,
+          retryOptions: {
+            attempts: 1,
+          },
+        },
+      },
+    })
+
+    const summary = readSummaryText(response)
+
+    if (!summary) {
+      sendJson(res, 502, {
+        error: 'Gemini returned an empty summary.',
+      })
+      return
+    }
+
     const points = parseBulletPoints(summary)
 
     sendJson(res, 200, {
@@ -214,15 +185,14 @@ export default async function handler(req, res) {
     })
   } catch (error) {
     console.error('Gemini summarize failed:', {
-      message: error?.message,
+      message: error?.message || String(error),
       status: error?.status,
       code: error?.code,
-      name: error?.name,
-      stack: error?.stack,
     })
 
     sendJson(res, 502, {
-      error: 'The summary service is currently unavailable.',
+      error:
+        'The summary service is temporarily unavailable. Please try again.',
     })
   }
 }
