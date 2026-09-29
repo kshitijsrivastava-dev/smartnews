@@ -1,6 +1,7 @@
 import { languages } from '../src/data/languages.js'
 
 const GEMINI_MODEL = 'gemini-3.5-flash'
+
 const MAX_ATTEMPTS = 3
 const RETRY_DELAY_MS = 600
 
@@ -126,14 +127,15 @@ async function generateWithRetry(ai, prompt) {
       lastError = new Error('Empty response from Gemini')
     } catch (error) {
       lastError = error
-      console.error(
-        `Gemini attempt ${attempt} failed:`,
-        error?.message || error,
-      )
+
+      console.error(`Gemini attempt ${attempt} failed:`, {
+        message: error?.message,
+        status: error?.status,
+        code: error?.code,
+        name: error?.name,
+      })
 
       if (isQuotaOrRateLimitError(error)) {
-        // Retrying won't help until the quota window resets — fail fast
-        // instead of burning more requests.
         throw error
       }
     }
@@ -155,14 +157,22 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY
 
   if (!apiKey) {
-    sendJson(res, 500, { error: 'Summary service is not configured' })
+    console.error('GEMINI_API_KEY is not configured')
+
+    sendJson(res, 500, {
+      error: 'Summary service is not configured',
+    })
+
     return
   }
 
   const body = readBody(req)
 
   if (!body) {
-    sendJson(res, 400, { error: 'Request body must be JSON' })
+    sendJson(res, 400, {
+      error: 'Request body must be JSON',
+    })
+
     return
   }
 
@@ -177,18 +187,25 @@ export default async function handler(req, res) {
     sendJson(res, 400, {
       error: 'Article text is required to generate a summary',
     })
+
     return
   }
 
   try {
-    const { GoogleGenAI } = await import('@google/genai/node')
+    const { GoogleGenAI } = await import('@google/genai')
 
-    const ai = new GoogleGenAI({ apiKey })
+    const ai = new GoogleGenAI({
+      apiKey,
+    })
 
-    const prompt = buildPrompt({ title, description, content, language })
+    const prompt = buildPrompt({
+      title,
+      description,
+      content,
+      language,
+    })
 
     const summary = await generateWithRetry(ai, prompt)
-
     const points = parseBulletPoints(summary)
 
     sendJson(res, 200, {
@@ -196,11 +213,16 @@ export default async function handler(req, res) {
       points: points.length > 0 ? points : [summary],
     })
   } catch (error) {
-    console.error('Gemini summarize failed:', error?.message || error)
+    console.error('Gemini summarize failed:', {
+      message: error?.message,
+      status: error?.status,
+      code: error?.code,
+      name: error?.name,
+      stack: error?.stack,
+    })
 
     sendJson(res, 502, {
-      error:
-        'The summary service is briefly busy. Please try again in a moment.',
+      error: 'The summary service is currently unavailable.',
     })
   }
 }
